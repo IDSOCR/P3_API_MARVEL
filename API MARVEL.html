@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ivar Solera API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #marvel-data {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        select {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="marvel-data">
+        <h1>Información de Personaje Marvel</h1>
+
+        <select id="character">
+            <option value="Iron Man">Iron Man</option>
+            <option value="Captain America">Captain America</option>
+            <option value="Thor">Thor</option>
+            <option value="Hulk">Hulk</option>
+            <option value="Black Widow">Black Widow</option>
+
+
+        </select>
+
+        <button onclick="fetchMarvelData()">Obtener Información</button>
+
+        <div id="data"></div>
+
+        <button onclick="cerrarVentana()">Cerrar</button>
+
+    </div>
+
+    <script>
+
+        const publicKey = '299de5d7809f72540d7b789bead692e6';
+        const privateKey = '3cf0d5c003facee39d495526d6d9a8518df7fd11';
+
+        async function fetchMarvelData() {
+            const character = document.getElementById('character').value;
+            const ts = new Date().getTime();
+            const hash = md5(ts + privateKey + publicKey);
+
+            const url = `https://gateway.marvel.com/v1/public/characters?name=${character}&ts=${ts}&apikey=${publicKey}&hash=${hash}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayData(data);
+            } catch (error) {
+                document.getElementById('data').innerText = 'Error al obtener los datos. Inténtalo de nuevo más tarde.';
+            }
+        }
+
+
+        function displayData(data) {
+            if (data.data.results.length === 0) {
+                document.getElementById('data').innerText = 'No se encontró ningún personaje con ese nombre.';
+                return;
+            }
+
+            const character = data.data.results[0];
+            document.getElementById('data').innerHTML = `
+                <h2>${character.name}</h2>
+                <img src="${character.thumbnail.path}.${character.thumbnail.extension}" alt="${character.name}">
+                <p>${character.description || 'No hay descripción disponible.'}</p>
+            `;
+        }
+
+
+        function cerrarVentana() {
+            window.close();
+        }
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+
+</body>
+
+</html>
